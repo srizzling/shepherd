@@ -7,7 +7,7 @@ builds:
     goarch:
       - amd64
 dockers:
-- image: srizzling/shepard
+- image: quay.io/srizzling/shepard
   tag_templates:
   - '{{ .Tag }}'
   - 'v{{ .Major }}.{{ .Minor }}'
