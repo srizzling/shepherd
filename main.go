@@ -24,7 +24,6 @@ func init() {
 	flag.StringVar(&baseURL, "url", "", "GitHub Enterprise URL")
 	flag.StringVar(&org, "org", "", "organization to include")
 	flag.StringVar(&maintainer, "maintainer", "", "maintainer to set as the maintainer of the org")
-
 	flag.BoolVar(&dryRun, "dry-run", false, "do not change branch settings just print the changes that would occur")
 	flag.Parse()
 
