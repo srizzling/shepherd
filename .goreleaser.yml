@@ -6,3 +6,9 @@ builds:
       - linux
     goarch:
       - amd64
+dockers:
+- image: srizzling/shepard
+  tag_templates:
+  - '{{ .Tag }}'
+  - 'v{{ .Major }}.{{ .Minor }}'
+  - 'latest'
