@@ -1,3 +1,3 @@
 FROM scratch
 COPY shepard /shepard
-ENTRYPOINT ["/goreleaser"]
+ENTRYPOINT ["/shepard"]
