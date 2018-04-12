@@ -4,6 +4,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
+// DoProtectBranch sets the specfied branch to be protected.
 func (s *ShepardBot) DoProtectBranch(repo *github.Repository, branch *github.Branch) error {
 	owner := *repo.Owner.Login
 	repoName := *repo.Name

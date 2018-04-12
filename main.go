@@ -10,21 +10,54 @@ import (
 	"github.com/srizzling/shepherd/shepherd"
 )
 
+var version = "master"
+
 var (
 	token      string
 	baseURL    string
 	org        string
 	dryRun     bool
 	maintainer string
+	pbranch    string
+
+	vrsn  bool
+	debug bool
+)
+
+const (
+	// BANNER is what is printed for help/info output.
+	BANNER = `
+____     _   _  U _____ u  ____    _   _  U _____ u   ____     ____
+/ __"| u |'| |'| \| ___"|/U|  _"\ u|'| |'| \| ___"|/U |  _"\ u |  _"\
+<\___ \/ /| |_| |\ |  _|"  \| |_) |/| |_| |\ |  _|"   \| |_) |//| | | |
+u___) | U|  _  |u | |___   |  __/ U|  _  |u | |___    |  _ <  U| |_| |\
+|____/>> |_| |_|  |_____|  |_|     |_| |_|  |_____|   |_| \_\  |____/ u
+ )(  (__)//   \\  <<   >>  ||>>_   //   \\  <<   >>   //   \\_  |||_
+(__)    (_") ("_)(__) (__)(__)__) (_") ("_)(__) (__) (__)  (__)(__)_)
+
+ensures your GitHub repositories are herded like sheep
+Version: %s
+developed with <3 by Sriram Venkatesh
+
+`
 )
 
 func init() {
 	// parse flags
 	flag.StringVar(&token, "token", os.Getenv("GITHUB_TOKEN"), "required: GitHub API token (or env var GITHUB_TOKEN)")
 	flag.StringVar(&baseURL, "url", "", "optional: GitHub Enterprise URL (default: github.com)")
-	flag.StringVar(&org, "org", "", "required: organization to include")
-	flag.StringVar(&maintainer, "maintainer", "", "required: maintainer to set as the maintainer of the org")
-	flag.BoolVar(&dryRun, "dry-run", false, "optional: do not change branch settings just print the changes that would occur (default: false)")
+	flag.StringVar(&org, "org", "", "required: organization to look through")
+	flag.StringVar(&maintainer, "maintainer", "", "required: team to set as CODEOWNERS")
+	flag.StringVar(&pbranch, "branch", "master", "optional: branch to protect (default: master)")
+	flag.BoolVar(&dryRun, "dryrun", false, "optional: do not change branch settings just print the changes that would occur (default: false)")
+
+	flag.BoolVar(&vrsn, "version", false, "optional: print version and exit")
+	flag.BoolVar(&debug, "debug", false, "optional: run in debug mode")
+
+	flag.Usage = func() {
+		fmt.Fprint(os.Stderr, fmt.Sprintf(BANNER, version))
+		flag.PrintDefaults()
+	}
 	flag.Parse()
 
 	if token == "" {
@@ -67,9 +100,7 @@ func main() {
 
 // a function that will be applied to each repo on an org
 func handleRepo(bot *shepherd.ShepardBot, repo *github.Repository) error {
-	branchName := "master"
-
-	b, err := bot.GetBranch(repo, branchName)
+	b, err := bot.GetBranch(repo, pbranch)
 	if err != nil {
 		return err
 	}
