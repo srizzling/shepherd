@@ -69,7 +69,7 @@ func NewBot(baseURL string, token string, maintainerTeamName string, orgName str
 	return bot, nil
 }
 
-// retreiveRepos returns a list of repos within the organization
+// RetreiveRepos returns a list of repos within the organization
 func (s *ShepardBot) RetreiveRepos() ([]*github.Repository, error) {
 	opt := &github.RepositoryListByOrgOptions{
 		ListOptions: github.ListOptions{PerPage: 10},
@@ -91,6 +91,7 @@ func (s *ShepardBot) RetreiveRepos() ([]*github.Repository, error) {
 	return allRepos, nil
 }
 
+// GetBranch function return a branch obj depending on the name provided
 func (s *ShepardBot) GetBranch(repo *github.Repository, branchName string) (*github.Branch, error) {
 	branch, _, err := s.gClient.Repositories.GetBranch(s.ctx, *repo.Owner.Login, *repo.Name, branchName)
 	if err != nil {

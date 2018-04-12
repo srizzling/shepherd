@@ -6,6 +6,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
+// CheckTeamRepoManagement verifies if the team is an admin of the project
 func (s *ShepardBot) CheckTeamRepoManagement(repo *github.Repository) (bool, error) {
 
 	_, response, err := s.gClient.Organizations.IsTeamRepo(
@@ -31,6 +32,7 @@ func (s *ShepardBot) CheckTeamRepoManagement(repo *github.Repository) (bool, err
 	return false, nil
 }
 
+// DoTeamRepoManagement sets the team as an admin of the repo
 func (s *ShepardBot) DoTeamRepoManagement(repo *github.Repository) error {
 	opt := &github.OrganizationAddTeamRepoOptions{
 		Permission: "admin",
