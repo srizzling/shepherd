@@ -1,6 +1,8 @@
  <p align="center">
     <a href="https://goreportcard.com/report/github.com/srizzling/shepherd"><img src="https://goreportcard.com/badge/github.com/srizzling/shepherd" /></a>
     <a href="https://travis-ci.org/srizzling/shepherd"><img src="  https://travis-ci.org/srizzling/shepherd.svg?branch=master" /></a>
+    <a href="https://godoc.org/github.com/srizzling/shepherd/shepherd?status.svg"><img src="  https://godoc.org/github.com/srizzling/shepherd/shepherd" /></a>
+    <img src="https://img.shields.io/github/release/srizzling/shepherd.svg" />
   </p>
 
 # shepherd
@@ -10,6 +12,7 @@
   - [Table of contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Features](#features)
+  - [Quick Start](#quick-start)
   - [Usage](#usage)
 
 ## Introduction
@@ -29,6 +32,15 @@ It is useful to note that `shepherd` will not:
 
 - configure status checks on your repository. This is because status checks are unique, or different per repo.
 - overwrite an existing CODEOWNERS file. This is because shepherd gives you the flexibility to configure multiple CODEOWNERS on different code paths (without adding complexity to the tool)
+
+## Quick Start
+
+Assuming you have created a team within your org named "core-maintainers". You can run the following set of commands
+
+```bash
+docker pull quay.io/srizzling/shepherd:latest
+docker run quay.io/srizzling/shepherd:latest -token <GITHUB_TOKEN> -maintainer core-maintainers -org test
+```
 
 ## Usage
 
