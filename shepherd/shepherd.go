@@ -10,6 +10,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// ShepardBot is the main bot object that gets created
 type ShepardBot struct {
 	gClient        *github.Client
 	ctx            context.Context
