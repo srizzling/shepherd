@@ -4,7 +4,7 @@
 
 ## shepherd
 
-## ToC
+## Table of Contents
 
     - [ToC](#toc)
     - [Introduction](#introduction)
