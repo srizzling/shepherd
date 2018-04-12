@@ -1,5 +1,5 @@
 builds:
-  - binary: shepard
+  - binary: shepherd
     goos:
       - windows
       - darwin

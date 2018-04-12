@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/sirupsen/logrus"
-	"github.com/srizzling/shepard/shepard"
+	"github.com/srizzling/shepherd/shepherd"
 )
 
 var (
@@ -20,11 +20,11 @@ var (
 
 func init() {
 	// parse flags
-	flag.StringVar(&token, "token", os.Getenv("GITHUB_TOKEN"), "GitHub API token (or env var GITHUB_TOKEN)")
-	flag.StringVar(&baseURL, "url", "", "GitHub Enterprise URL")
-	flag.StringVar(&org, "org", "", "organization to include")
-	flag.StringVar(&maintainer, "maintainer", "", "maintainer to set as the maintainer of the org")
-	flag.BoolVar(&dryRun, "dry-run", false, "do not change branch settings just print the changes that would occur")
+	flag.StringVar(&token, "token", os.Getenv("GITHUB_TOKEN"), "required: GitHub API token (or env var GITHUB_TOKEN)")
+	flag.StringVar(&baseURL, "url", "", "optional: GitHub Enterprise URL (default: github.com)")
+	flag.StringVar(&org, "org", "", "required: organization to include")
+	flag.StringVar(&maintainer, "maintainer", "", "required: maintainer to set as the maintainer of the org")
+	flag.BoolVar(&dryRun, "dry-run", false, "optional: do not change branch settings just print the changes that would occur (default: false)")
 	flag.Parse()
 
 	if token == "" {
@@ -34,11 +34,16 @@ func init() {
 	if org == "" {
 		usageAndExit("no organization provided", 1)
 	}
+
+	if maintainer == "" {
+		usageAndExit("no organization provided", 1)
+	}
+
 }
 
 func main() {
 	// intialize bot
-	bot, err := shepard.NewBot(baseURL, token, maintainer, org)
+	bot, err := shepherd.NewBot(baseURL, token, maintainer, org)
 	if err != nil {
 		logrus.Fatal(err)
 		panic(err)
@@ -61,7 +66,7 @@ func main() {
 }
 
 // a function that will be applied to each repo on an org
-func handleRepo(bot *shepard.ShepardBot, repo *github.Repository) error {
+func handleRepo(bot *shepherd.ShepardBot, repo *github.Repository) error {
 	branchName := "master"
 
 	b, err := bot.GetBranch(repo, branchName)

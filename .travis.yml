@@ -1,0 +1,40 @@
+# .travis.yml
+language: go
+
+# needed for the docker pipe
+services:
+- docker
+
+go:
+  - "1.10"
+  - master
+
+# builds should use vendor dir no go getting here m8
+install: true
+
+matrix:
+  # It's ok if our code fails on unstable development versions of Go.
+  allow_failures:
+    - go: master
+  fast_finish: true
+
+before_script:
+  - make tools
+  - make deps
+
+script:
+  - make lint
+  - make test
+  - make build
+#- make cover
+
+
+deploy:
+- provider: script
+  skip_cleanup: true
+  script:
+   - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+   - curl -sL http://git.io/goreleaser | bash
+  on:
+    tags: true
+    condition: $TRAVIS_OS_NAME = linux

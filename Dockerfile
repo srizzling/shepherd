@@ -1,3 +1,3 @@
-FROM scratch
-COPY shepard /shepard
-ENTRYPOINT ["/shepard"]
+FROM alpine:3.7
+COPY shepherd /shepherd
+ENTRYPOINT ["/shepherd"]
