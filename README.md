@@ -4,13 +4,13 @@
 
 ## shepherd
 
-## Table of Contents
+## Table of contents
 
-    - [ToC](#toc)
-    - [Introduction](#introduction)
-    - [Features](#features)
-    - [Usage](#usage)
-    - [Deployment](#deployment)
+  - [shepherd](#shepherd)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Features](#features)
+  - [Usage](#usage)
 
 ## Introduction
 
