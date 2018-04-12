@@ -1,10 +1,14 @@
+<p align="center">
+<a href="https://openclipart.org/detail/21561/shepherd"><img src="https://openclipart.org/download/21561/keksschaf-Shepherd.svg" /></a>
+</p>
+
  <p align="center">
     <a href="https://goreportcard.com/report/github.com/srizzling/shepherd"><img src="https://goreportcard.com/badge/github.com/srizzling/shepherd" /></a>
     <a href="https://travis-ci.org/srizzling/shepherd"><img src="https://travis-ci.org/srizzling/shepherd.svg?branch=master" /></a>
     <a href="https://godoc.org/github.com/srizzling/shepherd/shepherd"><img src="https://godoc.org/github.com/srizzling/shepherd/shepherd?status.svg" /></a>
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
     <img src="https://img.shields.io/github/release/srizzling/shepherd.svg"/>
-  </p>
+</p>
 
 # shepherd
 <!-- TOC depthFrom:2 -->
