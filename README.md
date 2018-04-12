@@ -1,13 +1,13 @@
  <p align="center">
     <a href="https://goreportcard.com/report/github.com/srizzling/shepherd"><img src="https://goreportcard.com/badge/github.com/srizzling/shepherd" /></a>
+    <a href="https://travis-ci.org/srizzling/shepherd"><img src="  https://travis-ci.org/srizzling/shepherd.svg?branch=master" /></a>
   </p>
 
-## shepherd
+# shepherd
 
 ## Table of contents
-
-  - [shepherd](#shepherd)
-  - [Table of Contents](#table-of-contents)
+- [shepherd](#shepherd)
+  - [Table of contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Features](#features)
   - [Usage](#usage)
