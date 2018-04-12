@@ -29,4 +29,5 @@ script:
 #- make cover
 
 after_success:
- - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" && curl -sL http://git.io/goreleaser | bash
+ - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+ - curl -sL http://git.io/goreleaser | bash
