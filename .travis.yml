@@ -28,13 +28,5 @@ script:
   - make build
 #- make cover
 
-
-deploy:
-- provider: script
-  skip_cleanup: true
-  script:
-   - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-   - curl -sL http://git.io/goreleaser | bash
-  on:
-    tags: true
-    condition: $TRAVIS_OS_NAME = linux
+after_success:
+ - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" && curl -sL http://git.io/goreleaser | bash
