@@ -1,5 +1,5 @@
 <p align="center">
-<a href="https://openclipart.org/detail/21561/shepherd"><img src="https://openclipart.org/download/21561/keksschaf-Shepherd.svg" /></a>
+<a href="https://openclipart.org/detail/21561/shepherd"><img width="200" height="200" src="https://openclipart.org/download/21561/keksschaf-Shepherd.svg" /></a>
 </p>
 
  <p align="center">
@@ -22,7 +22,7 @@
 
 ## Introduction
 
-`shepherd` is a useful cli for GitHub orgs who have multiple repositories, and want to ensure that a main "maintainer" team owns the repositories within that org. This project is heavily inspired by [pepper](https://github.com/genuinetools/pepper).
+`shepherd` is a bot that will configure repositories for GitHub orgs who have multiple repositories, and want to ensure that a main "maintainer" team owns the repositories within that org. This project is heavily inspired by [pepper](https://github.com/genuinetools/pepper).
 
 
 ## Features
