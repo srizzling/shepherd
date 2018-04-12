@@ -1,8 +1,9 @@
  <p align="center">
     <a href="https://goreportcard.com/report/github.com/srizzling/shepherd"><img src="https://goreportcard.com/badge/github.com/srizzling/shepherd" /></a>
-    <a href="https://travis-ci.org/srizzling/shepherd"><img src="  https://travis-ci.org/srizzling/shepherd.svg?branch=master" /></a>
-    <a href="https://godoc.org/github.com/srizzling/shepherd/shepherd?status.svg"><img src="  https://godoc.org/github.com/srizzling/shepherd/shepherd" /></a>
-    <img src="https://img.shields.io/github/release/srizzling/shepherd.svg" />
+    <a href="https://travis-ci.org/srizzling/shepherd"><img src="https://travis-ci.org/srizzling/shepherd.svg?branch=master" /></a>
+    <a href="https://godoc.org/github.com/srizzling/shepherd/shepherd?status.svg"><img src="https://godoc.org/github.com/srizzling/shepherd/shepherd" /></a>
+    <a href="https://img.shields.io/badge/License-MIT-yellow.svg"><img src="https://opensource.org/licenses/MIT" /></a>
+    <img src="https://img.shields.io/github/release/srizzling/shepherd.svg"/>
   </p>
 
 # shepherd
