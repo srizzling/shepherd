@@ -33,6 +33,6 @@ script:
 deploy:
   - provider: script
       skip_cleanup: true
-      script: test -n "$TRAVIS_TAG && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" quay.io && curl -sL http://git.io/goreleaser | bash
+      script: test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" quay.io && curl -sL http://git.io/goreleaser | bash
       on:
         tags: true
