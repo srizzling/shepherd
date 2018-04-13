@@ -1,4 +1,6 @@
 # .travis.yml
+dist: trusty
+sudo: required
 language: go
 
 # needed for the docker pipe
@@ -28,6 +30,9 @@ script:
   - make build
 #- make cover
 
-after_success:
- - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" quay.io
- - test -n "$TRAVIS_TAG && curl -sL http://git.io/goreleaser | bash
+deploy:
+  - provider: script
+      skip_cleanup: true
+      script: test -n "$TRAVIS_TAG && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" quay.io && curl -sL http://git.io/goreleaser | bash
+      on:
+        tags: true
