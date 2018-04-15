@@ -1,5 +1,7 @@
 builds:
   - binary: shepherd
+    env:
+      - CGO_ENABLED=0
     goos:
       - windows
       - darwin
