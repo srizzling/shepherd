@@ -20,8 +20,7 @@ var (
 	maintainer string
 	pbranch    string
 
-	vrsn  bool
-	debug bool
+	vrsn bool
 )
 
 const (
@@ -53,7 +52,6 @@ func init() {
 	flag.BoolVar(&dryRun, "dryrun", false, "optional: do not change branch settings just print the changes that would occur")
 
 	flag.BoolVar(&vrsn, "version", false, "optional: print version and exit")
-	flag.BoolVar(&debug, "debug", false, "optional: run in debug mode")
 
 	// Exit safely when version is used
 	if vrsn {
