@@ -45,10 +45,11 @@ developed with <3 by Sriram Venkatesh
 func init() {
 	// parse flags
 	flag.StringVar(&token, "token", os.Getenv("GITHUB_TOKEN"), "required: GitHub API token (or env var GITHUB_TOKEN)")
-	flag.StringVar(&baseURL, "url", "", "optional: GitHub Enterprise URL")
 	flag.StringVar(&org, "org", "", "required: organization to look through")
+	flag.StringVar(&pbranch, "branch", "master", "branch to protect")
+
+	flag.StringVar(&baseURL, "url", "", "optional: GitHub Enterprise URL")
 	flag.StringVar(&maintainer, "maintainer", "", "required: team to set as CODEOWNERS")
-	flag.StringVar(&pbranch, "branch", "master", "optional: branch to protect")
 	flag.BoolVar(&dryRun, "dryrun", false, "optional: do not change branch settings just print the changes that would occur")
 
 	flag.BoolVar(&vrsn, "version", false, "optional: print version and exit")
@@ -118,16 +119,15 @@ func handleRepo(bot *shepherd.ShepardBot, repo *github.Repository) error {
 
 	if !coExist {
 		fmt.Printf("[UPDATE REQUIRED] %s: A codeowner file was not found, a PR should be created\n", *repo.FullName)
-		if dryRun {
-			return nil
+
+		if !dryRun {
+			pr, err := bot.DoCreateCodeowners(repo, b)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("[UPDATED] %s: A PR (%s) has been created to add CODEOWNERS file\n", *repo.FullName, pr.GetIssueURL())
 		}
 
-		pr, err := bot.DoCreateCodeowners(repo, b)
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("[UPDATED] %s: A PR (%s) has been created to add CODEOWNERS file\n", *repo.FullName, pr.GetIssueURL())
 		return nil // shouldn't go further at this point, since the PR has to be merged
 	} else if prExist != nil {
 		fmt.Printf("[MERGE REQUIRED] %s: CODEOWNERS file exists in a PR, please merge this before continuing\n", *repo.FullName)
@@ -146,11 +146,14 @@ func handleRepo(bot *shepherd.ShepardBot, repo *github.Repository) error {
 		fmt.Printf("[OK] %s: is already managed by %s\n", *repo.FullName, maintainer)
 	} else {
 		fmt.Printf("[UPDATE REQUIRED] %s: needs to updated to be managed by %s\n", *repo.FullName, maintainer)
-		err = bot.DoTeamRepoManagement(repo)
-		if err != nil {
-			return err
+
+		if !dryRun {
+			err = bot.DoTeamRepoManagement(repo)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("[OK] %s: is now managed by %s\n", *repo.FullName, maintainer)
 		}
-		fmt.Printf("[OK] %s: is now managed by %s\n", *repo.FullName, maintainer)
 	}
 
 	// BRANCH PROTECTION + REQUIRED STATUS CHECKS
@@ -167,12 +170,14 @@ func handleRepo(bot *shepherd.ShepardBot, repo *github.Repository) error {
 	fmt.Printf("[UPDATE REQUIRED] %s: %s requires branch protection\n", *repo.FullName, b.GetName())
 
 	// protect branch above
-	err = bot.DoProtectBranch(repo, b)
-	if err != nil {
-		return err
-	}
+	if !dryRun {
+		err = bot.DoProtectBranch(repo, b)
+		if err != nil {
+			return err
+		}
 
-	fmt.Printf("[OK] %s: %s is now protected\n", *repo.FullName, b.GetName())
+		fmt.Printf("[OK] %s: %s is now protected\n", *repo.FullName, b.GetName())
+	}
 	return nil
 }
 
