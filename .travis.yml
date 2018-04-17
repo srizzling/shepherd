@@ -30,6 +30,9 @@ script:
   - make build
 #- make cover
 
+notifications:
+  email: false
+
 deploy:
   - provider: script
     skip_cleanup: true
