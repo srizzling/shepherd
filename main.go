@@ -55,7 +55,7 @@ func init() {
 
 	// Exit safely when version is used
 	if vrsn {
-		fmt.Sprintf(BANNER, version)
+		fmt.Printf(BANNER, version)
 		os.Exit(0)
 	}
 
