@@ -45,14 +45,20 @@ developed with <3 by Sriram Venkatesh
 func init() {
 	// parse flags
 	flag.StringVar(&token, "token", os.Getenv("GITHUB_TOKEN"), "required: GitHub API token (or env var GITHUB_TOKEN)")
-	flag.StringVar(&baseURL, "url", "", "optional: GitHub Enterprise URL (default: github.com)")
+	flag.StringVar(&baseURL, "url", "", "optional: GitHub Enterprise URL")
 	flag.StringVar(&org, "org", "", "required: organization to look through")
 	flag.StringVar(&maintainer, "maintainer", "", "required: team to set as CODEOWNERS")
-	flag.StringVar(&pbranch, "branch", "master", "optional: branch to protect (default: master)")
-	flag.BoolVar(&dryRun, "dryrun", false, "optional: do not change branch settings just print the changes that would occur (default: false)")
+	flag.StringVar(&pbranch, "branch", "master", "optional: branch to protect")
+	flag.BoolVar(&dryRun, "dryrun", false, "optional: do not change branch settings just print the changes that would occur")
 
 	flag.BoolVar(&vrsn, "version", false, "optional: print version and exit")
 	flag.BoolVar(&debug, "debug", false, "optional: run in debug mode")
+
+	// Exit safely when version is used
+	if vrsn {
+		fmt.Sprintf(BANNER, version)
+		os.Exit(0)
+	}
 
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, fmt.Sprintf(BANNER, version))
