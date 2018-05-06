@@ -12,10 +12,45 @@ import (
 
 // ShepardBot is the main bot object that gets created
 type ShepardBot struct {
-	gClient        *github.Client
-	ctx            context.Context
-	maintainerTeam *github.Team
-	org            *github.Organization
+	gClient *github.Client
+	ctx     context.Context
+	Repos   map[*github.Repository]RepoConfig
+}
+
+// Config struct holds the configuration data to do things
+type Config struct {
+	IncludeUserRepo bool
+	BaseURL         string
+	DryRun          bool
+	Debug           bool
+	Organizations   []OrganizationsConfig
+	Repos           []RepoConfig
+	GithubToken     string `mapstructure:"GITHUB_TOKEN" yaml:"github_token, omitempty"`
+}
+
+// OrganizationsConfig is the config section for configuring organization
+type OrganizationsConfig struct {
+	OrgName         string `mapstructure:"OrgName" yaml:"orgName, omitempty"`
+	Maintainer      string
+	Labels          []Label
+	Templates       map[string]string
+	ProtectedBranch string `mapstructure:"protected_branch" yaml:"protected_branch"`
+}
+
+// ReposConfig is the config section for configuring organization
+type RepoConfig struct {
+	Name            string
+	Maintainer      string
+	Labels          []Label
+	ProtectedBranch string
+	Templates       map[string]string
+	GHMaintainer    *github.Team
+	GHLabels        []*github.Label
+}
+
+type Label struct {
+	Name  string
+	Color string
 }
 
 // ShepardError is a generic error container for reporting errors/http status code errors from the Github API
@@ -31,10 +66,10 @@ func (e *ShepardError) Error() string {
 }
 
 // NewBot creates a new ShepardBot based off the baseURL(provide empty string if you want to default to basic github)
-func NewBot(baseURL string, token string, maintainerTeamName string, orgName string) (*ShepardBot, error) {
+func NewBot(config Config) (*ShepardBot, error) {
 	// initialize a new github client
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
+		&oauth2.Token{AccessToken: config.GithubToken},
 	)
 	ctx := context.Background()
 	tc := oauth2.NewClient(ctx, ts)
@@ -42,9 +77,9 @@ func NewBot(baseURL string, token string, maintainerTeamName string, orgName str
 	client := github.NewClient(tc)
 
 	// Setup baseUrl for github enterprise, else default to Github.com.
-	if baseURL != "" {
+	if config.BaseURL != "" {
 		var err error
-		client.BaseURL, err = url.Parse(baseURL + "/api/v3/")
+		client.BaseURL, err = url.Parse(config.BaseURL + "/api/v3/")
 		if err != nil {
 			return nil, err
 		}
@@ -55,30 +90,39 @@ func NewBot(baseURL string, token string, maintainerTeamName string, orgName str
 		ctx:     ctx,
 	}
 
-	// set github org to bot
-	err := bot.setOrg(orgName)
-	if err != nil {
-		return nil, err
+	repoMap := make(map[*github.Repository]RepoConfig)
+	for _, org := range config.Organizations {
+		orgMap, err := bot.retreiveRepoOnOrg(org)
+		if err != nil {
+			return nil, err
+		}
+		repoMap = mapUnion(repoMap, orgMap)
 	}
-
-	// set maintainer team to org
-	err = bot.setMaintainerTeam(maintainerTeamName)
-	if err != nil {
-		return nil, err
-	}
-
+	bot.Repos = repoMap
 	return bot, nil
 }
 
-// RetreiveRepos returns a list of repos within the organization
-func (s *ShepardBot) RetreiveRepos() ([]*github.Repository, error) {
+func mapUnion(m1, m2 map[*github.Repository]RepoConfig) map[*github.Repository]RepoConfig {
+	for ia, va := range m1 {
+		m2[ia] = va
+	}
+	return m2
+}
+
+// RetreiveReposOnOrg returns a list of repos within the organization
+func (s *ShepardBot) retreiveRepoOnOrg(org OrganizationsConfig) (map[*github.Repository]RepoConfig, error) {
 	opt := &github.RepositoryListByOrgOptions{
 		ListOptions: github.ListOptions{PerPage: 10},
 	}
 
+	orgObj, _, err := s.gClient.Organizations.Get(s.ctx, org.OrgName)
+	if err != nil {
+		return nil, err
+	}
+
 	var allRepos []*github.Repository
 	for {
-		repos, resp, err := s.gClient.Repositories.ListByOrg(s.ctx, *s.org.Login, opt)
+		repos, resp, err := s.gClient.Repositories.ListByOrg(s.ctx, *orgObj.Login, opt)
 		if err != nil {
 			return nil, err
 		}
@@ -89,7 +133,24 @@ func (s *ShepardBot) RetreiveRepos() ([]*github.Repository, error) {
 		opt.Page = resp.NextPage
 	}
 
-	return allRepos, nil
+	repoMap := make(map[*github.Repository]RepoConfig)
+
+	for _, r := range allRepos {
+		mTeam, err := s.getMaintainerTeam(orgObj, org.Maintainer)
+		if err != nil {
+			return nil, err
+		}
+
+		repoMap[r] = RepoConfig{
+			Name:            r.GetFullName(),
+			Maintainer:      org.Maintainer,
+			Labels:          org.Labels,
+			GHMaintainer:    mTeam,
+			GHLabels:        nil,
+			ProtectedBranch: org.ProtectedBranch,
+		}
+	}
+	return repoMap, nil
 }
 
 // GetBranch function return a branch obj depending on the name provided
@@ -99,13 +160,4 @@ func (s *ShepardBot) GetBranch(repo *github.Repository, branchName string) (*git
 		return nil, err
 	}
 	return branch, nil
-}
-
-func (s *ShepardBot) setOrg(orgName string) error {
-	org, _, err := s.gClient.Organizations.Get(s.ctx, orgName)
-	if err != nil {
-		return err
-	}
-	s.org = org
-	return nil
 }

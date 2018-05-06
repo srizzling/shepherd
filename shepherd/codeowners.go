@@ -18,9 +18,9 @@ func (s *ShepardBot) createBranch(repo *github.Repository, refObj *github.Refere
 	return err
 }
 
-func (s *ShepardBot) commitFileToBranch(repo *github.Repository, branchName string) error {
+func (s *ShepardBot) commitFileToBranch(repo *github.Repository, branchName string, maintainer *github.Team) error {
 	content := []byte(
-		fmt.Sprintf("* @%s/%s", s.org.GetLogin(), s.maintainerTeam.GetName()),
+		fmt.Sprintf("* @%s/%s", maintainer.GetOrganization().GetLogin(), maintainer.GetName()),
 	)
 
 	_, _, err := s.gClient.Repositories.CreateFile(
@@ -38,8 +38,8 @@ func (s *ShepardBot) commitFileToBranch(repo *github.Repository, branchName stri
 	return err
 }
 
-func (s *ShepardBot) createPR(repo *github.Repository, branchName string, branch *github.Branch) (*github.PullRequest, error) {
-	prMessage := fmt.Sprintf("Hi there @%s!,\n\nI'm your helpful shepherd and I've found that you are missing an important CODEOWNERS file which is mandated to be included for repos within this org (this ensures that the maintainers are pinged to review PR as they come in).\n\nThis PR is automatically created by [shepherd](https://github.com/srizzling/shepherd)\n\nThanks,\nShepard Bot", s.maintainerTeam.GetName())
+func (s *ShepardBot) createPR(repo *github.Repository, branchName string, branch *github.Branch, maintainer *github.Team) (*github.PullRequest, error) {
+	prMessage := fmt.Sprintf("Hi there @%s!,\n\nI'm your helpful shepherd and I've found that you are missing an important CODEOWNERS file which is mandated to be included for repos within this org (this ensures that the maintainers are pinged to review PR as they come in).\n\nThis PR is automatically created by [shepherd](https://github.com/srizzling/shepherd)\n\nThanks,\nShepard Bot", maintainer.GetName())
 
 	// Create a PR with the branch created
 	newPR := &github.NewPullRequest{
@@ -56,7 +56,7 @@ func (s *ShepardBot) createPR(repo *github.Repository, branchName string, branch
 
 // DoCreateCodeowners function will create a CODEOWNERS file in a branch, create a PR against the repo
 // and set the reviewer (of the CODEOWNERS PR) as the maintainer team configured
-func (s *ShepardBot) DoCreateCodeowners(repo *github.Repository, branch *github.Branch) (*github.PullRequest, error) {
+func (s *ShepardBot) DoCreateCodeowners(repo *github.Repository, branch *github.Branch, maintainer *github.Team) (*github.PullRequest, error) {
 	// Create a branch on the repo, from current master
 	sRand, err := randomstrings.GenerateRandomString(5)
 	if err != nil {
@@ -77,13 +77,13 @@ func (s *ShepardBot) DoCreateCodeowners(repo *github.Repository, branch *github.
 	}
 
 	// Commit CODEOWNERS file to Branch
-	err = s.commitFileToBranch(repo, branchName)
+	err = s.commitFileToBranch(repo, branchName, maintainer)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create PR with newly created branch
-	pr, err := s.createPR(repo, branchName, branch)
+	pr, err := s.createPR(repo, branchName, branch, maintainer)
 	if err != nil {
 		return nil, err
 	}

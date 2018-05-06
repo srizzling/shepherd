@@ -4,23 +4,20 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/google/go-github/github"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/srizzling/shepherd/shepherd"
 )
 
 var version = "master"
 
 var (
-	token      string
-	baseURL    string
-	org        string
-	dryRun     bool
-	maintainer string
-	pbranch    string
-
-	vrsn bool
+	token         string
+	vrsnFlag      bool
+	configuration shepherd.Config
 )
 
 const (
@@ -42,60 +39,42 @@ developed with <3 by Sriram Venkatesh
 )
 
 func init() {
-	// parse flags
-	flag.StringVar(&token, "token", os.Getenv("GITHUB_TOKEN"), "required: GitHub API token (or env var GITHUB_TOKEN)")
-	flag.StringVar(&org, "org", "", "required: organization to look through")
-	flag.StringVar(&pbranch, "branch", "master", "branch to protect")
 
-	flag.StringVar(&baseURL, "url", "", "optional: GitHub Enterprise URL")
-	flag.StringVar(&maintainer, "maintainer", "", "required: team to set as CODEOWNERS")
-	flag.BoolVar(&dryRun, "dryrun", false, "optional: do not change branch settings just print the changes that would occur")
+	// Intialize Viper
+	viper.SetConfigName(".shepherd")
+	viper.AddConfigPath(".")
+	viper.SetConfigType("yaml")
+	viper.SetEnvPrefix("shepherd")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv() // read in environment variables that match
+	viper.BindEnv("GITHUB_TOKEN")
 
-	flag.BoolVar(&vrsn, "version", false, "optional: print version and exit")
-
-	// Exit safely when version is used
-	if vrsn {
-		fmt.Printf(BANNER, version)
-		os.Exit(0)
+	if err := viper.ReadInConfig(); err != nil {
+		logrus.Fatalf("Error reading config file, %s", err)
+		panic(err)
 	}
 
-	flag.Usage = func() {
-		fmt.Fprint(os.Stderr, fmt.Sprintf(BANNER, version))
-		flag.PrintDefaults()
+	if err := viper.Unmarshal(&configuration); err != nil {
+		logrus.Fatalf("Error marshalling config file, %s", err)
+		panic(err)
 	}
-	flag.Parse()
 
+	token = configuration.GithubToken
 	if token == "" {
-		usageAndExit("GitHub token cannot be empty.", 1)
+		usageAndExit("Error! Github Token is required", 1)
 	}
-
-	if org == "" {
-		usageAndExit("no organization provided", 1)
-	}
-
-	if maintainer == "" {
-		usageAndExit("no organization provided", 1)
-	}
-
 }
 
 func main() {
 	// intialize bot
-	bot, err := shepherd.NewBot(baseURL, token, maintainer, org)
+	bot, err := shepherd.NewBot(configuration)
 	if err != nil {
 		logrus.Fatal(err)
 		panic(err)
 	}
 
-	//Retreive repos that are owned by the org
-	repos, err := bot.RetreiveRepos()
-	if err != nil {
-		logrus.Fatal(err)
-		panic(err)
-	}
-
-	for _, repo := range repos {
-		err = handleRepo(bot, repo)
+	for repo, repoConfig := range bot.Repos {
+		err = handleRepo(bot, repo, repoConfig)
 		if err != nil {
 			logrus.Fatal(err)
 			panic(err)
@@ -104,8 +83,9 @@ func main() {
 }
 
 // a function that will be applied to each repo on an org
-func handleRepo(bot *shepherd.ShepardBot, repo *github.Repository) error {
-	b, err := bot.GetBranch(repo, pbranch)
+func handleRepo(bot *shepherd.ShepardBot, repo *github.Repository, repoConfig shepherd.RepoConfig) error {
+	b, err := bot.GetBranch(repo, repoConfig.ProtectedBranch)
+	dryRun := configuration.DryRun
 	if err != nil {
 		return err
 	}
@@ -119,7 +99,7 @@ func handleRepo(bot *shepherd.ShepardBot, repo *github.Repository) error {
 		fmt.Printf("[UPDATE REQUIRED] %s: A codeowner file was not found, a PR should be created\n", *repo.FullName)
 
 		if !dryRun {
-			pr, err := bot.DoCreateCodeowners(repo, b)
+			pr, err := bot.DoCreateCodeowners(repo, b, repoConfig.GHMaintainer)
 			if err != nil {
 				return err
 			}
@@ -134,23 +114,23 @@ func handleRepo(bot *shepherd.ShepardBot, repo *github.Repository) error {
 	fmt.Printf("[OK] %s: CODEOWNERS file already exists in repo\n", *repo.FullName)
 
 	//Need to assign team to the repo even its in the org to be a "maintainer"
-	repoManagement, err := bot.CheckTeamRepoManagement(repo)
+	repoManagement, err := bot.CheckTeamRepoManagement(repo, repoConfig.GHMaintainer)
 
 	if err != nil {
 		return err
 	}
 
 	if repoManagement {
-		fmt.Printf("[OK] %s: is already managed by %s\n", *repo.FullName, maintainer)
+		fmt.Printf("[OK] %s: is already managed by %s\n", *repo.FullName, repoConfig.Maintainer)
 	} else {
-		fmt.Printf("[UPDATE REQUIRED] %s: needs to updated to be managed by %s\n", *repo.FullName, maintainer)
+		fmt.Printf("[UPDATE REQUIRED] %s: needs to updated to be managed by %s\n", *repo.FullName, repoConfig.Maintainer)
 
 		if !dryRun {
-			err = bot.DoTeamRepoManagement(repo)
+			err = bot.DoTeamRepoManagement(repo, repoConfig.GHMaintainer)
 			if err != nil {
 				return err
 			}
-			fmt.Printf("[OK] %s: is now managed by %s\n", *repo.FullName, maintainer)
+			fmt.Printf("[OK] %s: is now managed by %s\n", *repo.FullName, repoConfig.Maintainer)
 		}
 	}
 

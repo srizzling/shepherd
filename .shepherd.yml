@@ -1,0 +1,21 @@
+# Example .shepherd.yml
+
+include_user_repo: false
+url: ""
+dry_run: false
+debug: false
+organizations:
+  - orgName: "alfredcubed"
+    maintainer: "core-maintainers"
+    protected_branch: "master"
+repos:
+  - name:
+    maintainer:
+    templates:
+      issue_template:
+      pr_template:
+      codeowner_template:
+      pr_msg_template:
+      
+
+  
