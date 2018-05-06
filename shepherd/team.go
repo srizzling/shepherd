@@ -27,20 +27,19 @@ func (s *ShepardBot) retreiveTeams(orgName string) ([]*github.Team, error) {
 	return allTeams, nil
 }
 
-func (s *ShepardBot) setMaintainerTeam(maintainerTeamName string) error {
-	teams, err := s.retreiveTeams(s.org.GetLogin())
+func (s *ShepardBot) getMaintainerTeam(org *github.Organization, maintainerTeamName string) (*github.Team, error) {
+	teams, err := s.retreiveTeams(org.GetLogin())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, team := range teams {
-		if strings.EqualFold(maintainerTeamName, s.org.GetLogin()+"/"+*team.Name) {
-			s.maintainerTeam = team
-			return nil
+		if strings.EqualFold(maintainerTeamName, *team.Name) {
+			return team, nil
 		}
 	}
 
 	errMsg := fmt.Sprintf("Team (%s) not found within org", maintainerTeamName)
 	err = errors.New(errMsg)
-	return err
+	return nil, err
 }

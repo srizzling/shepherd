@@ -7,11 +7,11 @@ import (
 )
 
 // CheckTeamRepoManagement verifies if the team is an admin of the project
-func (s *ShepardBot) CheckTeamRepoManagement(repo *github.Repository) (bool, error) {
+func (s *ShepardBot) CheckTeamRepoManagement(repo *github.Repository, maintainer *github.Team) (bool, error) {
 
 	_, response, err := s.gClient.Organizations.IsTeamRepo(
 		s.ctx,
-		*s.maintainerTeam.ID,
+		*maintainer.ID,
 		*repo.Owner.Login,
 		*repo.Name,
 	)
@@ -33,11 +33,11 @@ func (s *ShepardBot) CheckTeamRepoManagement(repo *github.Repository) (bool, err
 }
 
 // DoTeamRepoManagement sets the team as an admin of the repo
-func (s *ShepardBot) DoTeamRepoManagement(repo *github.Repository) error {
+func (s *ShepardBot) DoTeamRepoManagement(repo *github.Repository, maintainer *github.Team) error {
 	opt := &github.OrganizationAddTeamRepoOptions{
 		Permission: "admin",
 	}
 
-	_, err := s.gClient.Organizations.AddTeamRepo(s.ctx, *s.maintainerTeam.ID, *repo.Owner.Login, *repo.Name, opt)
+	_, err := s.gClient.Organizations.AddTeamRepo(s.ctx, *maintainer.ID, *repo.Owner.Login, *repo.Name, opt)
 	return err
 }
